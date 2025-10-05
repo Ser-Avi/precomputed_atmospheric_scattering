@@ -195,16 +195,19 @@ float GetSunVisibility(vec3 point, vec3 sun_direction) {
   float p_dot_v = dot(p, sun_direction);
   float p_dot_p = dot(p, p);
   float ray_sphere_center_squared_distance = p_dot_p - p_dot_v * p_dot_v;
-  float distance_to_intersection = -p_dot_v - sqrt(
-      kSphereRadius * kSphereRadius - ray_sphere_center_squared_distance);
-  if (distance_to_intersection &gt; 0.0) {
-    // Compute the distance between the view ray and the sphere, and the
-    // corresponding (tangent of the) subtended angle. Finally, use this to
-    // compute an approximate sun visibility.
-    float ray_sphere_distance =
-        kSphereRadius - sqrt(ray_sphere_center_squared_distance);
-    float ray_sphere_angular_distance = -ray_sphere_distance / p_dot_v;
-    return smoothstep(1.0, 0.0, ray_sphere_angular_distance / sun_size.x);
+  float discriminant =
+      kSphereRadius * kSphereRadius - ray_sphere_center_squared_distance;
+  if (discriminant &gt;= 0.0) {
+    float distance_to_intersection = -p_dot_v - sqrt(discriminant);
+    if (distance_to_intersection &gt; 0.0) {
+      // Compute the distance between the view ray and the sphere, and the
+      // corresponding (tangent of the) subtended angle. Finally, use this to
+      // compute an approximate sun visibility.
+      float ray_sphere_distance =
+          kSphereRadius - sqrt(ray_sphere_center_squared_distance);
+      float ray_sphere_angular_distance = -ray_sphere_distance / p_dot_v;
+      return smoothstep(1.0, 0.0, ray_sphere_angular_distance / sun_size.x);
+    }
   }
   return 1.0;
 }
@@ -368,44 +371,47 @@ approximation as in <code>GetSunVisibility</code>:
   float p_dot_v = dot(p, view_direction);
   float p_dot_p = dot(p, p);
   float ray_sphere_center_squared_distance = p_dot_p - p_dot_v * p_dot_v;
-  float distance_to_intersection = -p_dot_v - sqrt(
-      kSphereRadius * kSphereRadius - ray_sphere_center_squared_distance);
+  float discriminant =
+      kSphereRadius * kSphereRadius -ray_sphere_center_squared_distance;
 
   // Compute the radiance reflected by the sphere, if the ray intersects it.
   float sphere_alpha = 0.0;
   vec3 sphere_radiance = vec3(0.0);
-  if (distance_to_intersection &gt; 0.0) {
-    // Compute the distance between the view ray and the sphere, and the
-    // corresponding (tangent of the) subtended angle. Finally, use this to
-    // compute the approximate analytic antialiasing factor sphere_alpha.
-    float ray_sphere_distance =
-        kSphereRadius - sqrt(ray_sphere_center_squared_distance);
-    float ray_sphere_angular_distance = -ray_sphere_distance / p_dot_v;
-    sphere_alpha =
-        min(ray_sphere_angular_distance / fragment_angular_size, 1.0);
+  if (discriminant &gt;= 0.0) {
+    float distance_to_intersection = -p_dot_v - sqrt(discriminant);
+    if (distance_to_intersection &gt; 0.0) {
+      // Compute the distance between the view ray and the sphere, and the
+      // corresponding (tangent of the) subtended angle. Finally, use this to
+      // compute the approximate analytic antialiasing factor sphere_alpha.
+      float ray_sphere_distance =
+          kSphereRadius - sqrt(ray_sphere_center_squared_distance);
+      float ray_sphere_angular_distance = -ray_sphere_distance / p_dot_v;
+      sphere_alpha =
+          min(ray_sphere_angular_distance / fragment_angular_size, 1.0);
 </pre>
 <p>We can then compute the intersection point and its normal, and use them to
 get the sun and sky irradiance received at this point. The reflected radiance
 follows, by multiplying the irradiance with the sphere BRDF:
-<pre class="prettyprint">    vec3 point = camera + view_direction * distance_to_intersection;
-    vec3 normal = normalize(point - kSphereCenter);
+<pre class="prettyprint">      vec3 point = camera + view_direction * distance_to_intersection;
+      vec3 normal = normalize(point - kSphereCenter);
 
-    // Compute the radiance reflected by the sphere.
-    vec3 sky_irradiance;
-    vec3 sun_irradiance = GetSunAndSkyIrradiance(
-        point - earth_center, normal, sun_direction, sky_irradiance);
-    sphere_radiance =
-        kSphereAlbedo * (1.0 / PI) * (sun_irradiance + sky_irradiance);
+      // Compute the radiance reflected by the sphere.
+      vec3 sky_irradiance;
+      vec3 sun_irradiance = GetSunAndSkyIrradiance(
+          point - earth_center, normal, sun_direction, sky_irradiance);
+      sphere_radiance =
+          kSphereAlbedo * (1.0 / PI) * (sun_irradiance + sky_irradiance);
 </pre>
 <p>Finally, we take into account the aerial perspective between the camera and
 the sphere, which depends on the length of this segment which is in shadow:
-<pre class="prettyprint">    float shadow_length =
-        max(0.0, min(shadow_out, distance_to_intersection) - shadow_in) *
-        lightshaft_fadein_hack;
-    vec3 transmittance;
-    vec3 in_scatter = GetSkyRadianceToPoint(camera - earth_center,
-        point - earth_center, shadow_length, sun_direction, transmittance);
-    sphere_radiance = sphere_radiance * transmittance + in_scatter;
+<pre class="prettyprint">      float shadow_length =
+          max(0.0, min(shadow_out, distance_to_intersection) - shadow_in) *
+          lightshaft_fadein_hack;
+      vec3 transmittance;
+      vec3 in_scatter = GetSkyRadianceToPoint(camera - earth_center,
+          point - earth_center, shadow_length, sun_direction, transmittance);
+      sphere_radiance = sphere_radiance * transmittance + in_scatter;
+    }
   }
 </pre>
 <p>In the following we repeat the same steps as above, but for the planet sphere
@@ -420,32 +426,35 @@ on the ground by the sun and sky visibility factors):
   p_dot_v = dot(p, view_direction);
   p_dot_p = dot(p, p);
   float ray_earth_center_squared_distance = p_dot_p - p_dot_v * p_dot_v;
-  distance_to_intersection = -p_dot_v - sqrt(
-      earth_center.z * earth_center.z - ray_earth_center_squared_distance);
+  discriminant = 
+      earth_center.z * earth_center.z - ray_earth_center_squared_distance;
 
   // Compute the radiance reflected by the ground, if the ray intersects it.
   float ground_alpha = 0.0;
   vec3 ground_radiance = vec3(0.0);
-  if (distance_to_intersection &gt; 0.0) {
-    vec3 point = camera + view_direction * distance_to_intersection;
-    vec3 normal = normalize(point - earth_center);
+  if (discriminant &gt;= 0.0) {
+    float distance_to_intersection = -p_dot_v - sqrt(discriminant);
+    if (distance_to_intersection &gt; 0.0) {
+      vec3 point = camera + view_direction * distance_to_intersection;
+      vec3 normal = normalize(point - earth_center);
 
-    // Compute the radiance reflected by the ground.
-    vec3 sky_irradiance;
-    vec3 sun_irradiance = GetSunAndSkyIrradiance(
-        point - earth_center, normal, sun_direction, sky_irradiance);
-    ground_radiance = kGroundAlbedo * (1.0 / PI) * (
-        sun_irradiance * GetSunVisibility(point, sun_direction) +
-        sky_irradiance * GetSkyVisibility(point));
+      // Compute the radiance reflected by the ground.
+      vec3 sky_irradiance;
+      vec3 sun_irradiance = GetSunAndSkyIrradiance(
+          point - earth_center, normal, sun_direction, sky_irradiance);
+      ground_radiance = kGroundAlbedo * (1.0 / PI) * (
+          sun_irradiance * GetSunVisibility(point, sun_direction) +
+          sky_irradiance * GetSkyVisibility(point));
 
-    float shadow_length =
-        max(0.0, min(shadow_out, distance_to_intersection) - shadow_in) *
-        lightshaft_fadein_hack;
-    vec3 transmittance;
-    vec3 in_scatter = GetSkyRadianceToPoint(camera - earth_center,
-        point - earth_center, shadow_length, sun_direction, transmittance);
-    ground_radiance = ground_radiance * transmittance + in_scatter;
-    ground_alpha = 1.0;
+      float shadow_length =
+          max(0.0, min(shadow_out, distance_to_intersection) - shadow_in) *
+          lightshaft_fadein_hack;
+      vec3 transmittance;
+      vec3 in_scatter = GetSkyRadianceToPoint(camera - earth_center,
+          point - earth_center, shadow_length, sun_direction, transmittance);
+      ground_radiance = ground_radiance * transmittance + in_scatter;
+      ground_alpha = 1.0;
+    }
   }
 </pre>
 <p>Finally, we compute the radiance and transmittance of the sky, and composite

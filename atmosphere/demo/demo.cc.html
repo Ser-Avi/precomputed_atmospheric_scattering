@@ -287,7 +287,7 @@ void Demo::InitModel() {
   // (see http://rredc.nrel.gov/solar/spectra/am1.5/ASTMG173/ASTMG173.html),
   // summed and averaged in each bin (e.g. the value for 360nm is the average
   // of the ASTM G-173 values for all wavelengths between 360 and 370nm).
-  // Values in W.m^-2.
+  // Values in W.m^-2 per nanometer.
   constexpr int kLambdaMin = 360;
   constexpr int kLambdaMax = 830;
   constexpr double kSolarIrradiance[48] = {
