@@ -223,32 +223,7 @@ const char kAtmosphereShader[] = R"(
     uniform sampler3D scattering_texture;
     uniform sampler3D single_mie_scattering_texture;
     uniform sampler2D irradiance_texture;
-    #ifdef RADIANCE_API_ENABLED
-    RadianceSpectrum GetSolarRadiance() {
-      return ATMOSPHERE.solar_irradiance /
-          (PI * ATMOSPHERE.sun_angular_radius * ATMOSPHERE.sun_angular_radius);
-    }
-    RadianceSpectrum GetSkyRadiance(
-        Position camera, Direction view_ray, Length shadow_length,
-        Direction sun_direction, out DimensionlessSpectrum transmittance) {
-      return GetSkyRadiance(ATMOSPHERE, transmittance_texture,
-          scattering_texture, single_mie_scattering_texture,
-          camera, view_ray, shadow_length, sun_direction, transmittance);
-    }
-    RadianceSpectrum GetSkyRadianceToPoint(
-        Position camera, Position point, Length shadow_length,
-        Direction sun_direction, out DimensionlessSpectrum transmittance) {
-      return GetSkyRadianceToPoint(ATMOSPHERE, transmittance_texture,
-          scattering_texture, single_mie_scattering_texture,
-          camera, point, shadow_length, sun_direction, transmittance);
-    }
-    IrradianceSpectrum GetSunAndSkyIrradiance(
-       Position p, Direction normal, Direction sun_direction,
-       out IrradianceSpectrum sky_irradiance) {
-      return GetSunAndSkyIrradiance(ATMOSPHERE, transmittance_texture,
-          irradiance_texture, p, normal, sun_direction, sky_irradiance);
-    }
-    #endif
+
     Luminance3 GetSolarLuminance() {
       return ATMOSPHERE.solar_irradiance /
           (PI * ATMOSPHERE.sun_angular_radius * ATMOSPHERE.sun_angular_radius) *
@@ -672,14 +647,14 @@ Model::Model(
   // (because the values are too large), so we store illuminance values divided
   // by MAX_LUMINOUS_EFFICACY instead. This is why, in precomputed illuminance
   // mode, we set SKY_RADIANCE_TO_LUMINANCE to MAX_LUMINOUS_EFFICACY.
-  bool precompute_illuminance = num_precomputed_wavelengths > 3;
+  //bool precompute_illuminance = num_precomputed_wavelengths > 3;
   double sky_k_r, sky_k_g, sky_k_b;
-  if (precompute_illuminance) {
+  //if (precompute_illuminance) {   // always precompute
     sky_k_r = sky_k_g = sky_k_b = MAX_LUMINOUS_EFFICACY;
-  } else {
-    ComputeSpectralRadianceToLuminanceFactors(wavelengths, solar_irradiance,
-        -3 /* lambda_power */, &sky_k_r, &sky_k_g, &sky_k_b);
-  }
+  //} else {
+  //  ComputeSpectralRadianceToLuminanceFactors(wavelengths, solar_irradiance,
+  //      -3 /* lambda_power */, &sky_k_r, &sky_k_g, &sky_k_b);
+  //}
   // Compute the values for the SUN_RADIANCE_TO_LUMINANCE constant.
   double sun_k_r, sun_k_g, sun_k_b;
   ComputeSpectralRadianceToLuminanceFactors(wavelengths, solar_irradiance,
@@ -743,32 +718,34 @@ Model::Model(
       functions_glsl;
   };
 
-  // Allocate the precomputed textures, but don't precompute them yet.
+  // Allocate the precomputed textures, but don't precompute them yet.                      // TODO: set these textures here when they are allocated
   transmittance_texture_ = NewTexture2d(
       TRANSMITTANCE_TEXTURE_WIDTH, TRANSMITTANCE_TEXTURE_HEIGHT);
   scattering_texture_ = NewTexture3d(
       SCATTERING_TEXTURE_WIDTH,
       SCATTERING_TEXTURE_HEIGHT,
       SCATTERING_TEXTURE_DEPTH,
-      combine_scattering_textures || !rgb_format_supported_ ? GL_RGBA : GL_RGB,
-      half_precision);
-  if (combine_scattering_textures) {
+      GL_RGBA, false); // combined and full precision
+      //combine_scattering_textures || !rgb_format_supported_ ? GL_RGBA : GL_RGB,
+      //half_precision);
+  //if (combine_scattering_textures) {
     optional_single_mie_scattering_texture_ = 0;
-  } else {
+  /*} else {
     optional_single_mie_scattering_texture_ = NewTexture3d(
         SCATTERING_TEXTURE_WIDTH,
         SCATTERING_TEXTURE_HEIGHT,
         SCATTERING_TEXTURE_DEPTH,
         rgb_format_supported_ ? GL_RGB : GL_RGBA,
         half_precision);
-  }
+  }*/
   irradiance_texture_ = NewTexture2d(
       IRRADIANCE_TEXTURE_WIDTH, IRRADIANCE_TEXTURE_HEIGHT);
 
   // Create and compile the shader providing our API.
   std::string shader =
       glsl_header_factory_({kLambdaR, kLambdaG, kLambdaB}) +
-      (precompute_illuminance ? "" : "#define RADIANCE_API_ENABLED\n") +
+      "" +  // always precompute
+      //(precompute_illuminance ? "" : "#define RADIANCE_API_ENABLED\n") +
       kAtmosphereShader;
   const char* source = shader.c_str();
   atmosphere_shader_ = glCreateShader(GL_FRAGMENT_SHADER);

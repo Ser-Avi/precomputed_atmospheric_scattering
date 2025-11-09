@@ -245,7 +245,7 @@ void Demo::InitModel() {
   constexpr double kMiePhaseFunctionG = 0.8;
   constexpr double kGroundAlbedo = 0.1;
   const double max_sun_zenith_angle =
-      (/*use_half_precision_ ? 102.0 : */120.0) / 180.0 * kPi;      // always full precision
+      (120.0) / 180.0 * kPi;      // always full precision
 
   DensityProfileLayer
       rayleigh_layer(0.0, 1.0, -1.0 / kRayleighScaleHeight, 0.0, 0.0);
@@ -272,17 +272,11 @@ void Demo::InitModel() {
     double mie =
         kMieAngstromBeta / kMieScaleHeight * pow(lambda, -kMieAngstromAlpha);
     wavelengths.push_back(l);
-    //if (use_constant_solar_spectrum_) {
-    //  solar_irradiance.push_back(kConstantSolarIrradiance);
-    //} else {
-      solar_irradiance.push_back(kSolarIrradiance[(l - kLambdaMin) / 10]);      // we are always using realistic solar spectrum
-    //}
+    solar_irradiance.push_back(kSolarIrradiance[(l - kLambdaMin) / 10]);      // we are always using realistic solar spectrum
     rayleigh_scattering.push_back(kRayleigh * pow(lambda, -4));
     mie_scattering.push_back(mie * kMieSingleScatteringAlbedo);
     mie_extinction.push_back(mie);
-    absorption_extinction.push_back(//use_ozone_ ?
-        kMaxOzoneNumberDensity * kOzoneCrossSection[(l - kLambdaMin) / 10]);// :        // we are always using ozone
-        //0.0);
+    absorption_extinction.push_back(kMaxOzoneNumberDensity * kOzoneCrossSection[(l - kLambdaMin) / 10]);        // we are always using ozone
     ground_albedo.push_back(kGroundAlbedo);
   }
 
@@ -290,8 +284,8 @@ void Demo::InitModel() {
       kBottomRadius, kTopRadius, {rayleigh_layer}, rayleigh_scattering,
       {mie_layer}, mie_scattering, mie_extinction, kMiePhaseFunctionG,
       ozone_density, absorption_extinction, ground_albedo, max_sun_zenith_angle,
-      kLengthUnitInMeters, /*use_luminance_ == PRECOMPUTED ? 15 : 3*/ 15,       // we are always precomputed
-      /*use_combined_textures_, use_half_precision_*/ true, false));            // always combined, full precision
+      kLengthUnitInMeters, 15,       // we are always precomputed
+      true, false));            // always combined, full precision
   model_->Init();
 
 /*
@@ -307,7 +301,7 @@ to get the final scene rendering program:
 
   const std::string fragment_shader_str =
       "#version 330\n" +
-      std::string(/*use_luminance_ != NONE ?*/ "#define USE_LUMINANCE\n"/* : ""*/) +        //always using luminance
+      std::string("#define USE_LUMINANCE\n") +        //always using luminance
       "const float kLengthUnitInMeters = " +
       std::to_string(kLengthUnitInMeters) + ";\n" +
       demo_glsl;
@@ -339,14 +333,12 @@ because our demo app does not have any texture of its own):
   double white_point_r = 1.0;
   double white_point_g = 1.0;
   double white_point_b = 1.0;
-  //if (do_white_balance_) {
     Model::ConvertSpectrumToLinearSrgb(wavelengths, solar_irradiance,
-        &white_point_r, &white_point_g, &white_point_b);
+    &white_point_r, &white_point_g, &white_point_b);
     double white_point = (white_point_r + white_point_g + white_point_b) / 3.0;
     white_point_r /= white_point;
     white_point_g /= white_point;
-    white_point_b /= white_point;
-  //}   // always using white balance
+    white_point_b /= white_point;   // always using white balance
   glUniform3f(glGetUniformLocation(program_, "white_point"),
       white_point_r, white_point_g, white_point_b);
   glUniform3f(glGetUniformLocation(program_, "earth_center"),
@@ -395,8 +387,7 @@ void Demo::HandleRedisplayEvent() {
       model_from_view[3],
       model_from_view[7],
       model_from_view[11]);
-  glUniform1f(glGetUniformLocation(program_, "exposure"),
-      /*use_luminance_ != NONE ?*/ exposure_ * 1e-5 /* : exposure_*/);
+  glUniform1f(glGetUniformLocation(program_, "exposure"), exposure_ * 1e-5);    // always use luminance
   glUniformMatrix4fv(glGetUniformLocation(program_, "model_from_view"),
       1, true, model_from_view);
   glUniform3f(glGetUniformLocation(program_, "sun_direction"),
@@ -408,7 +399,7 @@ void Demo::HandleRedisplayEvent() {
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   glBindVertexArray(0);
 
-  if (show_help_) {
+  if (false) {      // this is show_help if we want it
     std::stringstream help;
     help << "Mouse:\n"
          << " drag, CTRL+drag, wheel: view and sun directions\n"
