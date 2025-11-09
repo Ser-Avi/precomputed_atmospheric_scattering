@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\Programming\GPU\precomputed_atmospheric_scattering\text\text_renderer.cc">
+      <Filter>Text</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\model.cc">
+      <Filter>Model</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc">
+      <Filter>Demo</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo_main.cc">
+      <Filter>Demo</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\Programming\GPU\precomputed_atmospheric_scattering\external\glad\src\glad.cc">
+      <Filter>Glad</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="D:\Programming\GPU\precomputed_atmospheric_scattering\text\text_renderer.h">
+      <Filter>Text</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\model.h">
+      <Filter>Model</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\constants.h">
+      <Filter>Model</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.h">
+      <Filter>Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Programming\GPU\precomputed_atmospheric_scattering\external\glad\include\glad\glad.h">
+      <Filter>Glad</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\definitions.glsl">
+      <Filter>Model</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\functions.glsl">
+      <Filter>Model</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.glsl">
+      <Filter>Demo</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Programming\GPU\precomputed_atmospheric_scattering\platform\windows\CMakelists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="D:\Programming\GPU\precomputed_atmospheric_scattering\text\font.inc">
+      <Filter>Text</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Demo">
+      <UniqueIdentifier>{8451689F-2918-3609-9670-9AEC84C65BAB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Glad">
+      <UniqueIdentifier>{BF373716-38AD-3EF5-8532-230B16742678}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model">
+      <UniqueIdentifier>{9C994F01-4380-302D-B2C9-B0CB44B4CEEA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Text">
+      <UniqueIdentifier>{B8D1CC85-CACF-3665-954D-14FB8376AC43}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

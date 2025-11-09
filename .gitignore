@@ -1,3 +1,6 @@
 output/**
 *.glsl.inc
 
+/platform/windows
+/build/.vs/Atmosphere/FileContentIndex
+/build/.vs/Atmosphere/v17

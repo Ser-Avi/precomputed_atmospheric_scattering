@@ -1,3 +1,12 @@
+// Avi code to dynamically move Sun.
+void UpdateSunLocation(double& zenith, double& azimuth)
+{
+    zenith += 0.000001;
+    azimuth += 0.000001;
+}
+
+
+
 /**
  * Copyright (c) 2017 Eric Bruneton
  * All rights reserved.
@@ -103,9 +112,9 @@ Demo::Demo(int viewport_width, int viewport_height) :
     use_constant_solar_spectrum_(false),
     use_ozone_(true),
     use_combined_textures_(true),
-    use_half_precision_(true),
-    use_luminance_(NONE),
-    do_white_balance_(false),
+    use_half_precision_(false),
+    use_luminance_(PRECOMPUTED),
+    do_white_balance_(true),
     show_help_(true),
     program_(0),
     view_distance_meters_(9000.0),
@@ -113,6 +122,8 @@ Demo::Demo(int viewport_width, int viewport_height) :
     view_azimuth_angle_radians_(-0.1),
     sun_zenith_angle_radians_(1.3),
     sun_azimuth_angle_radians_(2.9),
+    display_texture_(0), // avi added
+    scatter_slice_(31),
     exposure_(10.0) {
   glutInitWindowSize(viewport_width, viewport_height);
   window_id_ = glutCreateWindow("Atmosphere Demo");
@@ -234,7 +245,7 @@ void Demo::InitModel() {
   constexpr double kMiePhaseFunctionG = 0.8;
   constexpr double kGroundAlbedo = 0.1;
   const double max_sun_zenith_angle =
-      (use_half_precision_ ? 102.0 : 120.0) / 180.0 * kPi;
+      (/*use_half_precision_ ? 102.0 : */120.0) / 180.0 * kPi;      // always full precision
 
   DensityProfileLayer
       rayleigh_layer(0.0, 1.0, -1.0 / kRayleighScaleHeight, 0.0, 0.0);
@@ -261,17 +272,17 @@ void Demo::InitModel() {
     double mie =
         kMieAngstromBeta / kMieScaleHeight * pow(lambda, -kMieAngstromAlpha);
     wavelengths.push_back(l);
-    if (use_constant_solar_spectrum_) {
-      solar_irradiance.push_back(kConstantSolarIrradiance);
-    } else {
-      solar_irradiance.push_back(kSolarIrradiance[(l - kLambdaMin) / 10]);
-    }
+    //if (use_constant_solar_spectrum_) {
+    //  solar_irradiance.push_back(kConstantSolarIrradiance);
+    //} else {
+      solar_irradiance.push_back(kSolarIrradiance[(l - kLambdaMin) / 10]);      // we are always using realistic solar spectrum
+    //}
     rayleigh_scattering.push_back(kRayleigh * pow(lambda, -4));
     mie_scattering.push_back(mie * kMieSingleScatteringAlbedo);
     mie_extinction.push_back(mie);
-    absorption_extinction.push_back(use_ozone_ ?
-        kMaxOzoneNumberDensity * kOzoneCrossSection[(l - kLambdaMin) / 10] :
-        0.0);
+    absorption_extinction.push_back(//use_ozone_ ?
+        kMaxOzoneNumberDensity * kOzoneCrossSection[(l - kLambdaMin) / 10]);// :        // we are always using ozone
+        //0.0);
     ground_albedo.push_back(kGroundAlbedo);
   }
 
@@ -279,8 +290,8 @@ void Demo::InitModel() {
       kBottomRadius, kTopRadius, {rayleigh_layer}, rayleigh_scattering,
       {mie_layer}, mie_scattering, mie_extinction, kMiePhaseFunctionG,
       ozone_density, absorption_extinction, ground_albedo, max_sun_zenith_angle,
-      kLengthUnitInMeters, use_luminance_ == PRECOMPUTED ? 15 : 3,
-      use_combined_textures_, use_half_precision_));
+      kLengthUnitInMeters, /*use_luminance_ == PRECOMPUTED ? 15 : 3*/ 15,       // we are always precomputed
+      /*use_combined_textures_, use_half_precision_*/ true, false));            // always combined, full precision
   model_->Init();
 
 /*
@@ -296,7 +307,7 @@ to get the final scene rendering program:
 
   const std::string fragment_shader_str =
       "#version 330\n" +
-      std::string(use_luminance_ != NONE ? "#define USE_LUMINANCE\n" : "") +
+      std::string(/*use_luminance_ != NONE ?*/ "#define USE_LUMINANCE\n"/* : ""*/) +        //always using luminance
       "const float kLengthUnitInMeters = " +
       std::to_string(kLengthUnitInMeters) + ";\n" +
       demo_glsl;
@@ -328,14 +339,14 @@ because our demo app does not have any texture of its own):
   double white_point_r = 1.0;
   double white_point_g = 1.0;
   double white_point_b = 1.0;
-  if (do_white_balance_) {
+  //if (do_white_balance_) {
     Model::ConvertSpectrumToLinearSrgb(wavelengths, solar_irradiance,
         &white_point_r, &white_point_g, &white_point_b);
     double white_point = (white_point_r + white_point_g + white_point_b) / 3.0;
     white_point_r /= white_point;
     white_point_g /= white_point;
     white_point_b /= white_point;
-  }
+  //}   // always using white balance
   glUniform3f(glGetUniformLocation(program_, "white_point"),
       white_point_r, white_point_g, white_point_b);
   glUniform3f(glGetUniformLocation(program_, "earth_center"),
@@ -343,6 +354,9 @@ because our demo app does not have any texture of its own):
   glUniform2f(glGetUniformLocation(program_, "sun_size"),
       tan(kSunAngularRadius),
       cos(kSunAngularRadius));
+
+  glUniform1i(glGetUniformLocation(program_, "display_texture"), display_texture_);
+  glUniform1i(glGetUniformLocation(program_, "scatter_slice"), scatter_slice_);
 
   // This sets 'view_from_clip', which only depends on the window size.
   HandleReshapeEvent(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
@@ -354,7 +368,10 @@ position and to the Sun direction, and then draws a full screen quad (and
 optionally a help screen).
 */
 
-void Demo::HandleRedisplayEvent() const {
+void Demo::HandleRedisplayEvent() {
+    // Avi added
+    //UpdateSunLocation(sun_zenith_angle_radians_, sun_azimuth_angle_radians_);
+
   // Unit vectors of the camera frame, expressed in world space.
   float cos_z = cos(view_zenith_angle_radians_);
   float sin_z = sin(view_zenith_angle_radians_);
@@ -379,7 +396,7 @@ void Demo::HandleRedisplayEvent() const {
       model_from_view[7],
       model_from_view[11]);
   glUniform1f(glGetUniformLocation(program_, "exposure"),
-      use_luminance_ != NONE ? exposure_ * 1e-5 : exposure_);
+      /*use_luminance_ != NONE ?*/ exposure_ * 1e-5 /* : exposure_*/);
   glUniformMatrix4fv(glGetUniformLocation(program_, "model_from_view"),
       1, true, model_from_view);
   glUniform3f(glGetUniformLocation(program_, "sun_direction"),
@@ -410,7 +427,8 @@ void Demo::HandleRedisplayEvent() const {
          << " w: white balance (currently: "
          << (do_white_balance_ ? "on" : "off") << ")\n"
          << " +/-: increase/decrease exposure (" << exposure_ << ")\n"
-         << " 1-9: predefined views\n";
+         << " 1-9: predefined views\n"
+         << "s: scatter texture slice(0-31): (" << scatter_slice_ << ")\n";
     text_renderer_->SetColor(1.0, 0.0, 0.0);
     text_renderer_->DrawText(help.str(), 5, 4);
   }
@@ -449,21 +467,29 @@ void Demo::HandleKeyboardEvent(unsigned char key) {
   } else if (key == 'h') {
     show_help_ = !show_help_;
   } else if (key == 's') {
-    use_constant_solar_spectrum_ = !use_constant_solar_spectrum_;
+      scatter_slice_ = (scatter_slice_ + 1) % 33;
+      glUseProgram(program_);
+      glUniform1i(glGetUniformLocation(program_, "scatter_slice"), scatter_slice_);
+    //use_constant_solar_spectrum_ = !use_constant_solar_spectrum_;
   } else if (key == 'o') {
-    use_ozone_ = !use_ozone_;
+    //use_ozone_ = !use_ozone_;
   } else if (key == 't') {
-    use_combined_textures_ = !use_combined_textures_;
+    //use_combined_textures_ = !use_combined_textures_;
   } else if (key == 'p') {
-    use_half_precision_ = !use_half_precision_;
-  } else if (key == 'l') {
-    switch (use_luminance_) {
-      case NONE: use_luminance_ = APPROXIMATE; break;
-      case APPROXIMATE: use_luminance_ = PRECOMPUTED; break;
-      case PRECOMPUTED: use_luminance_ = NONE; break;
-    }
+    //use_half_precision_ = !use_half_precision_;
+  }
+  else if (key == 'l') {
+      /* switch (use_luminance_) {
+         case NONE: use_luminance_ = APPROXIMATE; break;
+         case APPROXIMATE: use_luminance_ = PRECOMPUTED; break;
+         case PRECOMPUTED: use_luminance_ = NONE; break;
+       }*/
+  } else if (key == 'm') {
+      display_texture_ = (display_texture_ + 1) % 4;
+      glUseProgram(program_);
+      glUniform1i(glGetUniformLocation(program_, "display_texture"), display_texture_);
   } else if (key == 'w') {
-    do_white_balance_ = !do_white_balance_;
+    //do_white_balance_ = !do_white_balance_;
   } else if (key == '+') {
     exposure_ *= 1.1;
   } else if (key == '-') {

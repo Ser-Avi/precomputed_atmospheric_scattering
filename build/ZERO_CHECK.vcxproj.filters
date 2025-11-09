@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\Programming\GPU\precomputed_atmospheric_scattering\build\CMakeFiles\00001b6e4c205de36bce002a58606288\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{6A370059-0F86-390F-972C-7A3F82B1A10D}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

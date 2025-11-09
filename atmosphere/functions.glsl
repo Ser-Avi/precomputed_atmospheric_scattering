@@ -1630,7 +1630,7 @@ scattering are extrapolated as described in our
 function:
 */
 
-#ifdef COMBINED_SCATTERING_TEXTURES
+//#ifdef COMBINED_SCATTERING_TEXTURES
 vec3 GetExtrapolatedSingleMieScattering(
     IN(AtmosphereParameters) atmosphere, IN(vec4) scattering) {
   // Algebraically this can never be negative, but rounding errors can produce
@@ -1642,7 +1642,7 @@ vec3 GetExtrapolatedSingleMieScattering(
 	    (atmosphere.rayleigh_scattering.r / atmosphere.mie_scattering.r) *
 	    (atmosphere.mie_scattering / atmosphere.rayleigh_scattering);
 }
-#endif
+//#endif
 
 /*
 <p>We can then retrieve all the scattering components (Rayleigh + multiple
@@ -1671,21 +1671,21 @@ IrradianceSpectrum GetCombinedScattering(
       uvwz.z, uvwz.w);
   vec3 uvw1 = vec3((tex_x + 1.0 + uvwz.y) / Number(SCATTERING_TEXTURE_NU_SIZE),
       uvwz.z, uvwz.w);
-#ifdef COMBINED_SCATTERING_TEXTURES
+//#ifdef COMBINED_SCATTERING_TEXTURES
   vec4 combined_scattering =
       texture(scattering_texture, uvw0) * (1.0 - lerp) +
       texture(scattering_texture, uvw1) * lerp;
   IrradianceSpectrum scattering = IrradianceSpectrum(combined_scattering);
   single_mie_scattering =
       GetExtrapolatedSingleMieScattering(atmosphere, combined_scattering);
-#else
-  IrradianceSpectrum scattering = IrradianceSpectrum(
-      texture(scattering_texture, uvw0) * (1.0 - lerp) +
-      texture(scattering_texture, uvw1) * lerp);
-  single_mie_scattering = IrradianceSpectrum(
-      texture(single_mie_scattering_texture, uvw0) * (1.0 - lerp) +
-      texture(single_mie_scattering_texture, uvw1) * lerp);
-#endif
+//#else
+//  IrradianceSpectrum scattering = IrradianceSpectrum(
+//      texture(scattering_texture, uvw0) * (1.0 - lerp) +
+//      texture(scattering_texture, uvw1) * lerp);
+//  single_mie_scattering = IrradianceSpectrum(
+//      texture(single_mie_scattering_texture, uvw0) * (1.0 - lerp) +
+//      texture(single_mie_scattering_texture, uvw1) * lerp);
+//#endif
   return scattering;
 }
 
@@ -1849,10 +1849,10 @@ RadianceSpectrum GetSkyRadianceToPoint(
   scattering = scattering - shadow_transmittance * scattering_p;
   single_mie_scattering =
       single_mie_scattering - shadow_transmittance * single_mie_scattering_p;
-#ifdef COMBINED_SCATTERING_TEXTURES
+//#ifdef COMBINED_SCATTERING_TEXTURES
   single_mie_scattering = GetExtrapolatedSingleMieScattering(
       atmosphere, vec4(scattering, single_mie_scattering.r));
-#endif
+//#endif
 
   // Hack to avoid rendering artifacts when the sun is below the horizon.
   single_mie_scattering = single_mie_scattering *

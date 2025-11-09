@@ -77,7 +77,7 @@ class Demo {
   };
 
   void InitModel();
-  void HandleRedisplayEvent() const;
+  void HandleRedisplayEvent() ;
   void HandleReshapeEvent(int viewport_width, int viewport_height);
   void HandleKeyboardEvent(unsigned char key);
   void HandleMouseClickEvent(int button, int state, int mouse_x, int mouse_y);
@@ -114,6 +114,10 @@ class Demo {
   int previous_mouse_x_;
   int previous_mouse_y_;
   bool is_ctrl_key_pressed_;
+
+  // avi added
+  int display_texture_;
+  int scatter_slice_;
 };
 
 }  // namespace demo
