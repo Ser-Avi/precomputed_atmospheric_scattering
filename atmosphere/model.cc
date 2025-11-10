@@ -813,28 +813,17 @@ Model::Model(
       SCATTERING_TEXTURE_HEIGHT,
       SCATTERING_TEXTURE_DEPTH,
       GL_RGBA, false, scatter_tex); // combined and full precision
-      //combine_scattering_textures || !rgb_format_supported_ ? GL_RGBA : GL_RGB,
-      //half_precision);
-  //if (combine_scattering_textures) {
     optional_single_mie_scattering_texture_ = 0;
-  /*} else {
-    optional_single_mie_scattering_texture_ = NewTexture3d(
-        SCATTERING_TEXTURE_WIDTH,
-        SCATTERING_TEXTURE_HEIGHT,
-        SCATTERING_TEXTURE_DEPTH,
-        rgb_format_supported_ ? GL_RGB : GL_RGBA,
-        half_precision);
-  }*/
    std::string irrad_tex = "D:/Programming/GPU/precomputed_atmospheric_scattering/textures/irradiance_tex.tga";
   irradiance_texture_ = NewTexture2d(
       IRRADIANCE_TEXTURE_WIDTH, IRRADIANCE_TEXTURE_HEIGHT, irrad_tex);
 
   // Create and compile the shader providing our API.
   std::string shader =
-      glsl_header_factory_({kLambdaR, kLambdaG, kLambdaB}) +
+      glsl_header_factory_({ kLambdaR, kLambdaG, kLambdaB }) +
       "" +  // always precompute
       //(precompute_illuminance ? "" : "#define RADIANCE_API_ENABLED\n") +
-      kAtmosphereShader;
+       kAtmosphereShader;
   const char* source = shader.c_str();
   atmosphere_shader_ = glCreateShader(GL_FRAGMENT_SHADER);
   glShaderSource(atmosphere_shader_, 1, &source, NULL);
@@ -1066,13 +1055,6 @@ void Model::SetProgramUniforms(
   glBindTexture(GL_TEXTURE_2D, irradiance_texture_);
   glUniform1i(glGetUniformLocation(program, "irradiance_texture"),
       irradiance_texture_unit);
-
-  /*if (optional_single_mie_scattering_texture_ != 0) {
-    glActiveTexture(GL_TEXTURE0 + single_mie_scattering_texture_unit);
-    glBindTexture(GL_TEXTURE_3D, optional_single_mie_scattering_texture_);
-    glUniform1i(glGetUniformLocation(program, "single_mie_scattering_texture"),
-        single_mie_scattering_texture_unit);
-  }*/
 }
 
 /*
@@ -1148,12 +1130,12 @@ void Model::Precompute(
   glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
 
   // Compute the transmittance, and store it in transmittance_texture_.
-  //glFramebufferTexture(
-  //    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, transmittance_texture_, 0);
-  //glDrawBuffer(GL_COLOR_ATTACHMENT0);
-  //glViewport(0, 0, TRANSMITTANCE_TEXTURE_WIDTH, TRANSMITTANCE_TEXTURE_HEIGHT);
-  //compute_transmittance.Use();
-  //DrawQuad({}, full_screen_quad_vao_);
+  glFramebufferTexture(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, transmittance_texture_, 0);
+  glDrawBuffer(GL_COLOR_ATTACHMENT0);
+  glViewport(0, 0, TRANSMITTANCE_TEXTURE_WIDTH, TRANSMITTANCE_TEXTURE_HEIGHT);
+  compute_transmittance.Use();
+  DrawQuad({}, full_screen_quad_vao_);
 
   // Compute the direct irradiance, store it in delta_irradiance_texture and,
   // depending on 'blend', either initialize irradiance_texture_ with zeros or
