@@ -1,0 +1,10 @@
+^D:\PROGRAMMING\GPU\PRECOMPUTED_ATMOSPHERIC_SCATTERING\BUILD\CMAKEFILES\00001B6E4C205DE36BCE002A58606288\GENERATE.STAMP.RULE
+setlocal
+D:\Programming\GPU\precomputed_atmospheric_scattering\platform\windows\external\cmake\bin\cmake.exe -SD:/Programming/GPU/precomputed_atmospheric_scattering/platform/windows -BD:/Programming/GPU/precomputed_atmospheric_scattering/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file D:/Programming/GPU/precomputed_atmospheric_scattering/build/Atmosphere.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

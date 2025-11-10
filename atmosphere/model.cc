@@ -52,6 +52,14 @@ of the following C++ code.
 
 #include "atmosphere/constants.h"
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+#include <fstream>
+#include <vector>
+
 /*
 <p>The rest of this file is organized in 3 parts:
 <ul>
@@ -296,9 +304,12 @@ class Program {
     source = fragment_shader_source.c_str();
     GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment_shader, 1, &source, NULL);
-    glCompileShader(fragment_shader);
+    std::string filename = "D:/Programming/GPU/precomputed_atmospheric_scattering/full_shader.glsl";
+    std::ofstream file(filename);
+    file << source;
     CheckShader(fragment_shader);
     glAttachShader(program_, fragment_shader);
+
 
     glLinkProgram(program_);
     CheckProgram(program_);
@@ -394,7 +405,7 @@ class Program {
 <p>We also need functions to allocate the precomputed textures on GPU:
 */
 
-GLuint NewTexture2d(int width, int height) {
+GLuint NewTexture2d(int width, int height, const std::string& filepath = "") {
   GLuint texture;
   glGenTextures(1, &texture);
   glActiveTexture(GL_TEXTURE0);
@@ -405,13 +416,42 @@ GLuint NewTexture2d(int width, int height) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
   // 16F precision for the transmittance gives artifacts.
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0,
-      GL_RGBA, GL_FLOAT, NULL);
+  if (filepath == "")
+  {
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0,
+          GL_RGBA, GL_FLOAT, NULL);
+  }
+  else
+  {
+      std::cout << "loading 2d tex from file: " << filepath << std::endl;
+      int w, h, ch;
+      stbi_set_flip_vertically_on_load(true);
+      // this only works for .tga
+      unsigned char* data8bit = stbi_load(filepath.c_str(), &w, &h, &ch, 0);
+      if (!data8bit)
+      {
+          std::cerr << "Failed to load texture: " << filepath << std::endl;
+          return -1;
+      }
+
+      // convert 8bit to 32bit
+      std::vector<float> data(w * h * 4);
+      for (int i = 0; i < w * h * 4; ++i)
+      {
+          data[i] = data8bit[i] / 255.0f;
+      }
+
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, w, h, 0,
+          GL_RGBA, GL_FLOAT, data.data());
+      stbi_image_free(data8bit);
+
+      std::cout << "Texture load success: " << filepath << std::endl;
+  }
   return texture;
 }
 
 GLuint NewTexture3d(int width, int height, int depth, GLenum format,
-    bool half_precision) {
+    bool half_precision, const std::string& filepath = "") {
   GLuint texture;
   glGenTextures(1, &texture);
   glActiveTexture(GL_TEXTURE0);
@@ -425,8 +465,52 @@ GLuint NewTexture3d(int width, int height, int depth, GLenum format,
   GLenum internal_format = format == GL_RGBA ?
       (half_precision ? GL_RGBA16F : GL_RGBA32F) :
       (half_precision ? GL_RGB16F : GL_RGB32F);
+  // allocating tex size
   glTexImage3D(GL_TEXTURE_3D, 0, internal_format, width, height, depth, 0,
       format, GL_FLOAT, NULL);
+  if (filepath != "")
+  {
+      std::cout << "loading file from: " << filepath << std::endl;
+      for (int z = 0; z < depth; ++z)
+      {
+          int w, h, ch;
+          std::string name = filepath + std::to_string(z) + ".tga";
+          std::ifstream file(name);
+          if (!file.good())
+          {
+              std::cerr << "Slice not found: " << name << std::endl;
+              continue;
+          }
+          //stbi_set_flip_vertically_on_load(true);
+          unsigned char* data8bit = stbi_load(name.c_str(), &w, &h, &ch, 0);
+
+          if (!data8bit)
+          {
+              std::cerr << "Failed to load slice: " << name << std::endl;
+              continue;
+          }
+
+          // Verify dimensions match
+          if (w != width || h != height) {
+              std::cerr << "Slice dimensions mismatch: " << name
+                  << " expected " << width << "x" << height
+                  << " got " << w << "x" << h << std::endl;
+              stbi_image_free(data8bit);
+              continue;
+          }
+
+          std::vector<float> data(w * h * 4);
+          for (int i = 0; i < w * h * 4; ++i)
+          {
+              data[i] = data8bit[i] / 255.0f;
+          }
+
+          glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, z, width, height, 1,
+              GL_RGBA, GL_FLOAT, data.data());
+          stbi_image_free(data8bit);
+          std::cout << "Loaded slice: " << name << std::endl;
+      }
+  }
   return texture;
 }
 
@@ -717,15 +801,18 @@ Model::Model(
           std::to_string(sun_k_b) + ");\n" +
       functions_glsl;
   };
-
+  std::cout << "texture stuff starting" << std::endl;
   // Allocate the precomputed textures, but don't precompute them yet.                      // TODO: set these textures here when they are allocated
+  std::string trans_path = "D:/Programming/GPU/precomputed_atmospheric_scattering/textures/transmittance_tex.tga";
   transmittance_texture_ = NewTexture2d(
-      TRANSMITTANCE_TEXTURE_WIDTH, TRANSMITTANCE_TEXTURE_HEIGHT);
+      TRANSMITTANCE_TEXTURE_WIDTH, TRANSMITTANCE_TEXTURE_HEIGHT, trans_path);
+
+  std::string scatter_tex = "D:/Programming/GPU/precomputed_atmospheric_scattering/textures/scatter_tex_";
   scattering_texture_ = NewTexture3d(
       SCATTERING_TEXTURE_WIDTH,
       SCATTERING_TEXTURE_HEIGHT,
       SCATTERING_TEXTURE_DEPTH,
-      GL_RGBA, false); // combined and full precision
+      GL_RGBA, false, scatter_tex); // combined and full precision
       //combine_scattering_textures || !rgb_format_supported_ ? GL_RGBA : GL_RGB,
       //half_precision);
   //if (combine_scattering_textures) {
@@ -738,8 +825,9 @@ Model::Model(
         rgb_format_supported_ ? GL_RGB : GL_RGBA,
         half_precision);
   }*/
+   std::string irrad_tex = "D:/Programming/GPU/precomputed_atmospheric_scattering/textures/irradiance_tex.tga";
   irradiance_texture_ = NewTexture2d(
-      IRRADIANCE_TEXTURE_WIDTH, IRRADIANCE_TEXTURE_HEIGHT);
+      IRRADIANCE_TEXTURE_WIDTH, IRRADIANCE_TEXTURE_HEIGHT, irrad_tex);
 
   // Create and compile the shader providing our API.
   std::string shader =
@@ -979,12 +1067,12 @@ void Model::SetProgramUniforms(
   glUniform1i(glGetUniformLocation(program, "irradiance_texture"),
       irradiance_texture_unit);
 
-  if (optional_single_mie_scattering_texture_ != 0) {
+  /*if (optional_single_mie_scattering_texture_ != 0) {
     glActiveTexture(GL_TEXTURE0 + single_mie_scattering_texture_unit);
     glBindTexture(GL_TEXTURE_3D, optional_single_mie_scattering_texture_);
     glUniform1i(glGetUniformLocation(program, "single_mie_scattering_texture"),
         single_mie_scattering_texture_unit);
-  }
+  }*/
 }
 
 /*
@@ -1060,32 +1148,33 @@ void Model::Precompute(
   glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
 
   // Compute the transmittance, and store it in transmittance_texture_.
-  glFramebufferTexture(
-      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, transmittance_texture_, 0);
-  glDrawBuffer(GL_COLOR_ATTACHMENT0);
-  glViewport(0, 0, TRANSMITTANCE_TEXTURE_WIDTH, TRANSMITTANCE_TEXTURE_HEIGHT);
-  compute_transmittance.Use();
-  DrawQuad({}, full_screen_quad_vao_);
+  //glFramebufferTexture(
+  //    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, transmittance_texture_, 0);
+  //glDrawBuffer(GL_COLOR_ATTACHMENT0);
+  //glViewport(0, 0, TRANSMITTANCE_TEXTURE_WIDTH, TRANSMITTANCE_TEXTURE_HEIGHT);
+  //compute_transmittance.Use();
+  //DrawQuad({}, full_screen_quad_vao_);
 
   // Compute the direct irradiance, store it in delta_irradiance_texture and,
   // depending on 'blend', either initialize irradiance_texture_ with zeros or
   // leave it unchanged (we don't want the direct irradiance in
   // irradiance_texture_, but only the irradiance from the sky).
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-      delta_irradiance_texture, 0);
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
-      irradiance_texture_, 0);
-  glDrawBuffers(2, kDrawBuffers);
-  glViewport(0, 0, IRRADIANCE_TEXTURE_WIDTH, IRRADIANCE_TEXTURE_HEIGHT);
-  compute_direct_irradiance.Use();
-  compute_direct_irradiance.BindTexture2d(
-      "transmittance_texture", transmittance_texture_, 0);
-  DrawQuad({false, blend}, full_screen_quad_vao_);
+  //glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+  //    delta_irradiance_texture, 0);
+  //glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
+  //    irradiance_texture_, 0);
+  //glDrawBuffers(2, kDrawBuffers);
+  //glViewport(0, 0, IRRADIANCE_TEXTURE_WIDTH, IRRADIANCE_TEXTURE_HEIGHT);
+  //compute_direct_irradiance.Use();
+  //compute_direct_irradiance.BindTexture2d(
+  //    "transmittance_texture", transmittance_texture_, 0);
+  //DrawQuad({false, blend}, full_screen_quad_vao_);
 
   // Compute the rayleigh and mie single scattering, store them in
   // delta_rayleigh_scattering_texture and delta_mie_scattering_texture, and
   // either store them or accumulate them in scattering_texture_ and
   // optional_single_mie_scattering_texture_.
+  
   glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
       delta_rayleigh_scattering_texture, 0);
   glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
@@ -1189,6 +1278,7 @@ void Model::Precompute(
   glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, 0, 0);
   glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, 0, 0);
   glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, 0, 0);
+  
 }
 
 }  // namespace atmosphere

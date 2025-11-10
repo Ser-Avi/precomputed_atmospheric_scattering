@@ -339,13 +339,16 @@ because our demo app does not have any texture of its own):
     white_point_r /= white_point;
     white_point_g /= white_point;
     white_point_b /= white_point;   // always using white balance
+    printf("\nWHITE POINT: %lf, %lf, %lf", white_point_r, white_point_g, white_point_b);
   glUniform3f(glGetUniformLocation(program_, "white_point"),
       white_point_r, white_point_g, white_point_b);
   glUniform3f(glGetUniformLocation(program_, "earth_center"),
       0.0, 0.0, -kBottomRadius / kLengthUnitInMeters);
+  printf("\nEarth center: %lf, %lf, %lf", 0.0, 0.0, -kBottomRadius / kLengthUnitInMeters);
   glUniform2f(glGetUniformLocation(program_, "sun_size"),
       tan(kSunAngularRadius),
       cos(kSunAngularRadius));
+  printf("\nSUN Size: %lf, %lf\n", tan(kSunAngularRadius), cos(kSunAngularRadius));
 
   glUniform1i(glGetUniformLocation(program_, "display_texture"), display_texture_);
   glUniform1i(glGetUniformLocation(program_, "scatter_slice"), scatter_slice_);
@@ -394,6 +397,7 @@ void Demo::HandleRedisplayEvent() {
       cos(sun_azimuth_angle_radians_) * sin(sun_zenith_angle_radians_),
       sin(sun_azimuth_angle_radians_) * sin(sun_zenith_angle_radians_),
       cos(sun_zenith_angle_radians_));
+  //printf("\nSUN DIR: %lf, %lf, %lf", cos(sun_azimuth_angle_radians_) * sin(sun_zenith_angle_radians_), sin(sun_azimuth_angle_radians_) * sin(sun_zenith_angle_radians_), cos(sun_zenith_angle_radians_));
 
   glBindVertexArray(full_screen_quad_vao_);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

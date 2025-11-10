@@ -1,0 +1,40 @@
+^D:\PROGRAMMING\GPU\PRECOMPUTED_ATMOSPHERIC_SCATTERING\ATMOSPHERE\DEFINITIONS.GLSL
+setlocal
+call D:\Programming\GPU\precomputed_atmospheric_scattering\platform\windows\create_glsl_inc.bat D:/Programming/GPU/precomputed_atmospheric_scattering/atmosphere/definitions.glsl D:\Programming\GPU\precomputed_atmospheric_scattering\build\generated\atmosphere\definitions.glsl.inc
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^D:\PROGRAMMING\GPU\PRECOMPUTED_ATMOSPHERIC_SCATTERING\ATMOSPHERE\FUNCTIONS.GLSL
+setlocal
+call D:\Programming\GPU\precomputed_atmospheric_scattering\platform\windows\create_glsl_inc.bat D:/Programming/GPU/precomputed_atmospheric_scattering/atmosphere/functions.glsl D:\Programming\GPU\precomputed_atmospheric_scattering\build\generated\atmosphere\functions.glsl.inc
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^D:\PROGRAMMING\GPU\PRECOMPUTED_ATMOSPHERIC_SCATTERING\ATMOSPHERE\DEMO\DEMO.GLSL
+setlocal
+call D:\Programming\GPU\precomputed_atmospheric_scattering\platform\windows\create_glsl_inc.bat D:/Programming/GPU/precomputed_atmospheric_scattering/atmosphere/demo/demo.glsl D:\Programming\GPU\precomputed_atmospheric_scattering\build\generated\atmosphere\demo\demo.glsl.inc
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^D:\PROGRAMMING\GPU\PRECOMPUTED_ATMOSPHERIC_SCATTERING\PLATFORM\WINDOWS\CMAKELISTS.TXT
+setlocal
+D:\Programming\GPU\precomputed_atmospheric_scattering\platform\windows\external\cmake\bin\cmake.exe -SD:/Programming/GPU/precomputed_atmospheric_scattering/platform/windows -BD:/Programming/GPU/precomputed_atmospheric_scattering/build --check-stamp-file D:/Programming/GPU/precomputed_atmospheric_scattering/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

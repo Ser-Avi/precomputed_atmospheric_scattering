@@ -1,0 +1,32 @@
+﻿  Generating .inc in D:/Programming/GPU/precomputed_atmospheric_scattering/build/generated
+  Generating .inc in D:/Programming/GPU/precomputed_atmospheric_scattering/build/generated
+  Generating .inc in D:/Programming/GPU/precomputed_atmospheric_scattering/build/generated
+  Building Custom Rule D:/Programming/GPU/precomputed_atmospheric_scattering/platform/windows/CMakeLists.txt
+  text_renderer.cc
+D:\Programming\GPU\precomputed_atmospheric_scattering\text\text_renderer.cc(122,34): warning C4244: 'initializing': conversion from 'int' to 'GLfloat', possible loss of data
+D:\Programming\GPU\precomputed_atmospheric_scattering\text\text_renderer.cc(122,28): warning C4244: 'initializing': conversion from 'int' to 'const GLfloat', possible loss of data
+D:\Programming\GPU\precomputed_atmospheric_scattering\text\text_renderer.cc(123,35): warning C4244: 'initializing': conversion from 'int' to 'GLfloat', possible loss of data
+D:\Programming\GPU\precomputed_atmospheric_scattering\text\text_renderer.cc(123,29): warning C4244: 'initializing': conversion from 'int' to 'const GLfloat', possible loss of data
+  model.cc
+  demo.cc
+D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(343,37): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(343,22): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(343,7): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(348,10): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(347,10): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(368,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(369,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(370,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(371,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(375,11): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(390,69): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(396,10): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(395,39): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(394,39): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(439,36): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(440,29): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(440,24): warning C4244: 'initializing': conversion from 'double' to 'const float', possible loss of data
+  demo_main.cc
+  glad.cc
+  Generating Code...
+LINK : fatal error LNK1104: cannot open file 'freeglutd.lib'
