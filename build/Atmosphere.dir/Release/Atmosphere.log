@@ -1,21 +1,4 @@
-﻿  demo.cc
-D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(1057,37): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
-D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(1057,22): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
-D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(1057,7): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
-D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(1063,10): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
-D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(1062,10): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
-D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(1084,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(1085,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(1086,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(1087,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(1091,11): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(1106,69): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
-D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(1112,10): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
-D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(1111,39): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
-D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(1110,39): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
-D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(1156,36): warning C4305: 'initializing': truncation from 'double' to 'float'
-D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(1157,29): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-D:\Programming\GPU\precomputed_atmospheric_scattering\atmosphere\demo\demo.cc(1157,24): warning C4244: 'initializing': conversion from 'double' to 'const float', possible loss of data
+﻿  model.cc
   Atmosphere.vcxproj -> D:\Programming\GPU\precomputed_atmospheric_scattering\bin\Atmosphere.exe
   'pwsh.exe' is not recognized as an internal or external command,
   operable program or batch file.

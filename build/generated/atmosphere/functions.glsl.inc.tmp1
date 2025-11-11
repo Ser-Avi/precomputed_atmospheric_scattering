@@ -771,6 +771,27 @@
 "  scattering = scattering - shadow_transmittance * scattering_p;\r\n"\
 "  single_mie_scattering =\r\n"\
 "      single_mie_scattering - shadow_transmittance * single_mie_scattering_p;\r\n"\
+"  if (!ray_r_mu_intersects_ground)\r\n"\
+"  {\r\n"\
+"      const float EPS = 0.004;\r\n"\
+"      float muHoriz = -sqrt(1.0 - (atmosphere.bottom_radius / r) * (atmosphere.bottom_radius / r));\r\n"\
+"      if (abs(mu - muHoriz) < EPS)\r\n"\
+"      {\r\n"\
+"          float a = ((mu - muHoriz) + EPS) / (2.0 * EPS);\r\n"\
+"          mu = muHoriz + EPS;\r\n"\
+"          IrradianceSpectrum single_mie_scattering0;\r\n"\
+"          IrradianceSpectrum single_mie_scattering1;\r\n"\
+"          Length r0 = ClampRadius(atmosphere, sqrt(d * d + 2.0 * r * mu * d + r * r));\r\n"\
+"          Number mu0 = clamp((r * mu + d) / r0, -1.0, 1.0);\r\n"\
+"          Number mu_s_0 = clamp((r * mu_s + d * nu) / r0, -1.0, 1.0);\r\n"\
+"          IrradianceSpectrum inScatter0 = GetCombinedScattering(atmosphere, scattering_texture, single_mie_scattering_texture, r, mu, mu_s, nu, ray_r_mu_intersects_ground, single_mie_scattering0);\r\n"\
+"          IrradianceSpectrum inScatter1 = GetCombinedScattering(atmosphere, scattering_texture, single_mie_scattering_texture, r0, mu0, mu_s_0, nu, ray_r_mu_intersects_ground, single_mie_scattering1);\r\n"\
+"          IrradianceSpectrum inScatter = max(inScatter0 - shadow_transmittance * inScatter1, 0.0);\r\n"\
+"          IrradianceSpectrum mie_scattering = max(single_mie_scattering0 - shadow_transmittance * single_mie_scattering1, 0.0);\r\n"\
+"          scattering = inScatter;\r\n"\
+"          single_mie_scattering = mie_scattering;\r\n"\
+"      }\r\n"\
+"  }\r\n"\
 "  single_mie_scattering = GetExtrapolatedSingleMieScattering(\r\n"\
 "      atmosphere, vec4(scattering, single_mie_scattering.r));\r\n"\
 "  single_mie_scattering = single_mie_scattering *\r\n"\

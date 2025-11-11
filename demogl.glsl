@@ -463,6 +463,15 @@ vec3 GetSkyRadianceToPoint(
   float nu = dot(view_ray, sun_direction);
   float d = length(point - camera);
   bool ray_r_mu_intersects_ground = RayIntersectsGround(atmosphere, r, mu);
+  
+  // PR artifact fix
+  if (!ray_r_mu_intersects_ground)
+  {
+    float mu_horiz = -SafeSqrt(
+        1.0 - (atmosphere.bottom_radius / r) * (atmosphere.bottom_radius / r));
+    mu = max(mu, mu_horiz + 0.004);
+  }
+  
   transmittance = GetTransmittance(atmosphere, transmittance_texture,
       r, mu, d, ray_r_mu_intersects_ground);
     

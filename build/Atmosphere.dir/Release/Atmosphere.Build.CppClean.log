@@ -1,6 +1,5 @@
 d:\programming\gpu\precomputed_atmospheric_scattering\build\atmosphere.dir\release\glad.obj
 d:\programming\gpu\precomputed_atmospheric_scattering\build\atmosphere.dir\release\demo_main.obj
-d:\programming\gpu\precomputed_atmospheric_scattering\build\atmosphere.dir\release\demo.obj
 d:\programming\gpu\precomputed_atmospheric_scattering\build\atmosphere.dir\release\model.obj
 d:\programming\gpu\precomputed_atmospheric_scattering\build\atmosphere.dir\release\text_renderer.obj
 d:\programming\gpu\precomputed_atmospheric_scattering\build\generated\atmosphere\definitions.glsl.inc
@@ -8,17 +7,8 @@ d:\programming\gpu\precomputed_atmospheric_scattering\build\generated\atmosphere
 d:\programming\gpu\precomputed_atmospheric_scattering\build\generated\atmosphere\demo\demo.glsl.inc
 d:\programming\gpu\precomputed_atmospheric_scattering\build\cmakefiles\generate.stamp
 d:\programming\gpu\precomputed_atmospheric_scattering\build\atmosphere.dir\release\atmosphere.tlog\cl.command.1.tlog
-d:\programming\gpu\precomputed_atmospheric_scattering\build\atmosphere.dir\release\atmosphere.tlog\cl.items.tlog
 d:\programming\gpu\precomputed_atmospheric_scattering\build\atmosphere.dir\release\atmosphere.tlog\cl.read.1.tlog
 d:\programming\gpu\precomputed_atmospheric_scattering\build\atmosphere.dir\release\atmosphere.tlog\cl.write.1.tlog
 d:\programming\gpu\precomputed_atmospheric_scattering\build\atmosphere.dir\release\atmosphere.tlog\custombuild.command.1.tlog
 d:\programming\gpu\precomputed_atmospheric_scattering\build\atmosphere.dir\release\atmosphere.tlog\custombuild.read.1.tlog
 d:\programming\gpu\precomputed_atmospheric_scattering\build\atmosphere.dir\release\atmosphere.tlog\custombuild.write.1.tlog
-d:\programming\gpu\precomputed_atmospheric_scattering\build\atmosphere.dir\release\atmosphere.tlog\link-cvtres.read.1.tlog
-d:\programming\gpu\precomputed_atmospheric_scattering\build\atmosphere.dir\release\atmosphere.tlog\link-cvtres.write.1.tlog
-d:\programming\gpu\precomputed_atmospheric_scattering\build\atmosphere.dir\release\atmosphere.tlog\link-rc.read.1.tlog
-d:\programming\gpu\precomputed_atmospheric_scattering\build\atmosphere.dir\release\atmosphere.tlog\link-rc.write.1.tlog
-d:\programming\gpu\precomputed_atmospheric_scattering\build\atmosphere.dir\release\atmosphere.tlog\link.command.1.tlog
-d:\programming\gpu\precomputed_atmospheric_scattering\build\atmosphere.dir\release\atmosphere.tlog\link.read.1.tlog
-d:\programming\gpu\precomputed_atmospheric_scattering\build\atmosphere.dir\release\atmosphere.tlog\link.secondary.1.tlog
-d:\programming\gpu\precomputed_atmospheric_scattering\build\atmosphere.dir\release\atmosphere.tlog\link.write.1.tlog

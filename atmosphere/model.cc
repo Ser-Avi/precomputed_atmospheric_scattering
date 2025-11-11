@@ -426,26 +426,56 @@ GLuint NewTexture2d(int width, int height, const std::string& filepath = "") {
       std::cout << "loading 2d tex from file: " << filepath << std::endl;
       int w, h, ch;
       stbi_set_flip_vertically_on_load(true);
-      // this only works for .tga
-      unsigned char* data8bit = stbi_load(filepath.c_str(), &w, &h, &ch, 0);
-      if (!data8bit)
+
+      // For HDR files
+      float* data = stbi_loadf(filepath.c_str(), &w, &h, &ch, 0);
+      if (!data)
       {
-          std::cerr << "Failed to load texture: " << filepath << std::endl;
+          std::cerr << "Failed to load HDR texture: " << filepath << std::endl;
           return -1;
       }
 
-      // convert 8bit to 32bit
-      std::vector<float> data(w * h * 4);
-      for (int i = 0; i < w * h * 4; ++i)
+      // HDR files typically have 3 channels (RGB), so we may need to expand to RGBA
+      std::vector<float> rgbaData(w * h * 4);
+      for (int i = 0; i < w * h; ++i)
       {
-          data[i] = data8bit[i] / 255.0f;
+          rgbaData[i * 4 + 0] = data[i * ch + 0]; // R
+          rgbaData[i * 4 + 1] = data[i * ch + 1]; // G
+          rgbaData[i * 4 + 2] = data[i * ch + 2]; // B
+          rgbaData[i * 4 + 3] = (ch == 4) ? data[i * ch + 3] : 1.0f; // A or 1.0
       }
 
       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, w, h, 0,
-          GL_RGBA, GL_FLOAT, data.data());
-      stbi_image_free(data8bit);
+          GL_RGBA, GL_FLOAT, rgbaData.data());
+      stbi_image_free(data);
 
-      std::cout << "Texture load success: " << filepath << std::endl;
+      std::cout << "HDR Texture load success: " << filepath << std::endl;
+
+      // commented out tga loader
+      
+      //std::cout << "loading 2d tex from file: " << filepath << std::endl;
+      //int w, h, ch;
+      //stbi_set_flip_vertically_on_load(true);
+      //// this only works for .tga
+      //unsigned char* data8bit = stbi_load(filepath.c_str(), &w, &h, &ch, 0);
+      //if (!data8bit)
+      //{
+      //    std::cerr << "Failed to load texture: " << filepath << std::endl;
+      //    return -1;
+      //}
+
+      //// convert 8bit to 32bit
+      //std::vector<float> data(w * h * 4);
+      //for (int i = 0; i < w * h * 4; ++i)
+      //{
+      //    data[i] = data8bit[i] / 255.0f;
+      //}
+
+      //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, w, h, 0,
+      //    GL_RGBA, GL_FLOAT, data.data());
+      //stbi_image_free(data8bit);
+
+      //std::cout << "Texture load success: " << filepath << std::endl;
   }
   return texture;
 }
@@ -473,6 +503,46 @@ GLuint NewTexture3d(int width, int height, int depth, GLenum format,
       std::cout << "loading file from: " << filepath << std::endl;
       for (int z = 0; z < depth; ++z)
       {
+          //Not working HDR importing
+          std::string name = filepath + std::to_string(z) + ".hdr";
+          std::cout << "loading slice from file: " << name << std::endl;
+          int w, h, ch;
+          //stbi_set_flip_vertically_on_load(true);
+
+          // For HDR files
+          float* data = stbi_loadf(name.c_str(), &w, &h, &ch, 0);
+          if (!data)
+          {
+              std::cerr << "Failed to load slice: " << name << std::endl;
+              continue;
+          }
+
+          // Verify dimensions match
+          if (w != width || h != height) {
+              std::cerr << "Slice dimensions mismatch: " << name
+                  << " expected " << width << "x" << height
+                  << " got " << w << "x" << h << std::endl;
+              stbi_image_free(data);
+              continue;
+          }
+
+          // HDR files typically have 3 channels (RGB), so we may need to expand to RGBA
+          std::vector<float> rgbaData(w * h * 4);
+          for (int i = 0; i < w * h; ++i)
+          {
+              rgbaData[i * 4 + 0] = data[i * ch + 0]; // R
+              rgbaData[i * 4 + 1] = data[i * ch + 1]; // G
+              rgbaData[i * 4 + 2] = data[i * ch + 2]; // B
+              rgbaData[i * 4 + 3] = (ch == 4) ? data[i * ch + 3] : 1.0f; // A or 1.0
+          }
+
+          glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, z, width, height, 1,
+              GL_RGBA, GL_FLOAT, rgbaData.data());
+          stbi_image_free(data);
+          std::cout << "Loaded slice: " << name << std::endl;
+
+          // OLD tga loading
+          /*
           int w, h, ch;
           std::string name = filepath + std::to_string(z) + ".tga";
           std::ifstream file(name);
@@ -509,7 +579,10 @@ GLuint NewTexture3d(int width, int height, int depth, GLenum format,
               GL_RGBA, GL_FLOAT, data.data());
           stbi_image_free(data8bit);
           std::cout << "Loaded slice: " << name << std::endl;
+          */
       }
+
+      std::cout << "loaded 3d tex: " << filepath << std::endl;
   }
   return texture;
 }
@@ -803,31 +876,31 @@ Model::Model(
   };
   std::cout << "texture stuff starting" << std::endl;
   // Allocate the precomputed textures, but don't precompute them yet.                      // TODO: set these textures here when they are allocated
-  std::string trans_path = "D:/Programming/GPU/precomputed_atmospheric_scattering/textures/transmittance_tex.tga";
+  std::string trans_path = "D:/Programming/GPU/precomputed_atmospheric_scattering/textures/transmittance_high.hdr";
   transmittance_texture_ = NewTexture2d(
       TRANSMITTANCE_TEXTURE_WIDTH, TRANSMITTANCE_TEXTURE_HEIGHT, trans_path);
 
-  std::string scatter_tex = "D:/Programming/GPU/precomputed_atmospheric_scattering/textures/scatter_tex_";
+  std::string scatter_tex = "D:/Programming/GPU/precomputed_atmospheric_scattering/textures/scatter_high_";
   scattering_texture_ = NewTexture3d(
       SCATTERING_TEXTURE_WIDTH,
       SCATTERING_TEXTURE_HEIGHT,
       SCATTERING_TEXTURE_DEPTH,
       GL_RGBA, false, scatter_tex); // combined and full precision
     optional_single_mie_scattering_texture_ = 0;
-   std::string irrad_tex = "D:/Programming/GPU/precomputed_atmospheric_scattering/textures/irradiance_tex.tga";
+  std::string irrad_tex = "D:/Programming/GPU/precomputed_atmospheric_scattering/textures/irradiance_high.hdr";
   irradiance_texture_ = NewTexture2d(
       IRRADIANCE_TEXTURE_WIDTH, IRRADIANCE_TEXTURE_HEIGHT, irrad_tex);
 
   // Create and compile the shader providing our API.
-  std::string shader =
-      glsl_header_factory_({ kLambdaR, kLambdaG, kLambdaB }) +
-      "" +  // always precompute
-      //(precompute_illuminance ? "" : "#define RADIANCE_API_ENABLED\n") +
-       kAtmosphereShader;
-  const char* source = shader.c_str();
-  atmosphere_shader_ = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(atmosphere_shader_, 1, &source, NULL);
-  glCompileShader(atmosphere_shader_);
+  //std::string shader =
+  //    glsl_header_factory_({ kLambdaR, kLambdaG, kLambdaB }) +
+  //    "" +  // always precompute
+  //    //(precompute_illuminance ? "" : "#define RADIANCE_API_ENABLED\n") +
+  //     kAtmosphereShader;
+  //const char* source = shader.c_str();
+  //atmosphere_shader_ = glCreateShader(GL_FRAGMENT_SHADER);
+  //glShaderSource(atmosphere_shader_, 1, &source, NULL);
+  //glCompileShader(atmosphere_shader_);
 
   // Create a full screen quad vertex array and vertex buffer objects.
   glGenVertexArrays(1, &full_screen_quad_vao_);
@@ -1141,16 +1214,16 @@ void Model::Precompute(
   // depending on 'blend', either initialize irradiance_texture_ with zeros or
   // leave it unchanged (we don't want the direct irradiance in
   // irradiance_texture_, but only the irradiance from the sky).
-  //glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-  //    delta_irradiance_texture, 0);
-  //glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
-  //    irradiance_texture_, 0);
-  //glDrawBuffers(2, kDrawBuffers);
-  //glViewport(0, 0, IRRADIANCE_TEXTURE_WIDTH, IRRADIANCE_TEXTURE_HEIGHT);
-  //compute_direct_irradiance.Use();
-  //compute_direct_irradiance.BindTexture2d(
-  //    "transmittance_texture", transmittance_texture_, 0);
-  //DrawQuad({false, blend}, full_screen_quad_vao_);
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+      delta_irradiance_texture, 0);
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
+      irradiance_texture_, 0);
+  glDrawBuffers(2, kDrawBuffers);
+  glViewport(0, 0, IRRADIANCE_TEXTURE_WIDTH, IRRADIANCE_TEXTURE_HEIGHT);
+  compute_direct_irradiance.Use();
+  compute_direct_irradiance.BindTexture2d(
+      "transmittance_texture", transmittance_texture_, 0);
+  DrawQuad({false, blend}, full_screen_quad_vao_);
 
   // Compute the rayleigh and mie single scattering, store them in
   // delta_rayleigh_scattering_texture and delta_mie_scattering_texture, and
